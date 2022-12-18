@@ -110,6 +110,7 @@ class _TimeSeriesDataset(Dataset):
         overwrite_cache: Overwrite saved cache (default False).
         path: Location of the ``.torchtime`` cache directory (default ".").
         seed: Random seed for reproducibility (optional).
+        one_hot_y: Defines the return shape of the target labels. Default True.
 
     Attributes:
         X (Tensor): A tensor of default shape (*n*, *s*, *c* + 1) where *n* = number of
@@ -127,8 +128,8 @@ class _TimeSeriesDataset(Dataset):
 
             Where trajectories are of unequal lengths they are padded with ``NaNs`` to
             the length of the longest trajectory in the data.
-        y (Tensor): One-hot encoded label data. A tensor of shape (*n*, *l*) where *l*
-            is the number of classes.
+        y (Tensor): Depending on one_hot_y either an One-hot encoded label tensor of shape (*n*, *l*) where *l*
+            is the number of classes or simply the categorical index.
         length (Tensor): Length of each trajectory prior to padding. A tensor of shape
             (*n*).
 
@@ -159,6 +160,7 @@ class _TimeSeriesDataset(Dataset):
         overwrite_cache: bool = False,
         path: str = ".",
         seed: int = None,
+        one_hot_y: bool = True,
     ) -> None:
         self.dataset = dataset
         self.split = split
@@ -176,6 +178,7 @@ class _TimeSeriesDataset(Dataset):
         self.overwrite_cache = overwrite_cache
         self.path = pathlib.Path() / path / ".torchtime" / self.dataset
         self.seed = seed
+        self.one_hot_y = one_hot_y
 
         # Constants
         self.IMPUTE_FUNCTIONS = {
@@ -1174,6 +1177,7 @@ class UEA(_TimeSeriesDataset):
         overwrite_cache: Overwrite saved cache (default False).
         path: Location of the ``.torchtime`` cache directory (default ".").
         seed: Random seed for reproducibility (optional).
+        one_hot_y: Defines the return shape of the target labels. Default True.
 
     Attributes:
         X (Tensor): A tensor of default shape (*n*, *s*, *c* + 1) where *n* = number of
@@ -1191,8 +1195,8 @@ class UEA(_TimeSeriesDataset):
 
             Where trajectories are of unequal lengths they are padded with ``NaNs`` to
             the length of the longest trajectory in the data.
-        y (Tensor): One-hot encoded label data. A tensor of shape (*n*, *l*) where *l*
-            is the number of classes.
+        y (Tensor): Depending on one_hot_y either an One-hot encoded label tensor of shape (*n*, *l*) where *l*
+            is the number of classes or simply the categorical index.
         length (Tensor): Length of each trajectory prior to padding. A tensor of shape
             (*n*).
 
@@ -1223,6 +1227,7 @@ class UEA(_TimeSeriesDataset):
         overwrite_cache: bool = False,
         path: str = ".",
         seed: int = None,
+        one_hot_y: bool = True,
     ) -> None:
         self.dataset_name = dataset
         self.raw_path = (
@@ -1244,6 +1249,7 @@ class UEA(_TimeSeriesDataset):
             overwrite_cache=overwrite_cache,
             path=path,
             seed=seed,
+            one_hot_y=one_hot_y,
         )
 
     def _download_uea_data(self, url, path):
@@ -1294,11 +1300,14 @@ class UEA(_TimeSeriesDataset):
             [self._pad(X_raw.iloc[i], length.max()) for i in range(len(X_raw))],
             dim=0,
         )
-        # One-hot encode labels (start from zero)
-        y = torch.tensor(y_raw.astype(int))
-        if all(y != 0):
-            y -= 1
-        y = F.one_hot(y)
+        if self.one_hot_y:
+            # One-hot encode labels (start from zero)
+            y = torch.tensor(y_raw.astype(int))
+            if all(y != 0):
+                y -= 1
+            y = F.one_hot(y)
+        else:
+            y = torch.tensor(y_raw.astype(int))
         return X, y, length
 
     def _pad(self, Xi, max_length):
