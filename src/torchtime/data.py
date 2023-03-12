@@ -376,13 +376,16 @@ class _TimeSeriesDataset(Dataset):
         if self.val_prop is None:
             self.val_prop = 1 - self.train_prop
         else:
-            assert (
-                self.val_prop > EPS and self.val_prop < 1 - self.train_prop
-            ), "argument 'val_prop' must be in range (0, {})".format(
-                1 - self.train_prop
+            assert self.val_prop > EPS and self.val_prop <= (
+                round(1 - self.train_prop, 3)
+            ), "argument 'val_prop' must be in range [0, {}]".format(
+                round(1 - self.train_prop, 3)
             )
-            self.test_prop = 1 - self.train_prop - self.val_prop
-            self.val_prop = self.val_prop / (1 - self.test_prop)
+            # TODO: Take a look at what philipp did here
+            self.test_prop = (
+                0  # round(1 - round(self.train_prop - self.val_prop, 3), 3)
+            )
+            # self.val_prop = self.val_prop / round((1 - self.test_prop), 3)
         splits = ["train", "val"]
         if self.test_prop > EPS:
             splits.append("test")
