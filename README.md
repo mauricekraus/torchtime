@@ -15,7 +15,7 @@ This is a fork of [torchtime](https://github.com/philipdarke/torchtime) which do
 
 ### Roadmap
 * PyPi release
-* Liscnen Update
+* License Update
 * PhysioNet Challenge Lightning Module
 * Add new tests
 * Include one hot encoding
