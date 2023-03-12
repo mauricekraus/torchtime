@@ -37,7 +37,7 @@ PyTorch data sets for supervised time series classification and prediction probl
 ## Installation
 
 ```bash
-$ pip install git+https://github.com/mauricekraus/torchtimemauricekraus
+$ pip install git+https://github.com/mauricekraus/torchtime
 ```
 
 ## Getting started
