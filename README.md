@@ -7,7 +7,7 @@
 <!-- [![DOI](https://img.shields.io/badge/DOI-10.48550%2FarXiv.2207.12503-blue)](https://doi.org/10.48550/arXiv.2207.12503) -->
 
 ## Notice
-This is a fork of [Phillip Darke](https://github.com/philipdarke/torchtime) that doesn't seem to be maintained anymore. Therefore I forked this repository and try to add new features from time to time.
+This is a fork of [torchtime](https://github.com/philipdarke/torchtime) which doesn't seem to be maintained anymore. Therefore I forked this repository and try to add new features from time to time.
 
 ### New Features
 * Python <= 3.10 support
