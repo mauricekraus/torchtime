@@ -20,7 +20,10 @@ class UEADataModule(LightningDataModule):
         train_val_ratio: tuple[float, float],
         batch_size: int,
         seed: int,
-        append_time_as_first_dim: bool = False,
+        return_lengths_as_last_dim: bool = False,
+        append_time_as_first_dim: bool = False,  # TODO not really tested
+        overwrite_cache: bool = False,
+        batch_as_first_dim: bool = False,
     ) -> None:
         super().__init__()
 
@@ -29,6 +32,9 @@ class UEADataModule(LightningDataModule):
         self.batch_size = batch_size
         self.train_val_ratio = train_val_ratio
         self.append_time_as_first_dim = append_time_as_first_dim
+        self.return_lengths_as_last_dim = return_lengths_as_last_dim
+        self.overwrite_cache = overwrite_cache
+        self.batch_as_first_dim = batch_as_first_dim
 
     def prepare_data(self) -> None:
 
@@ -38,6 +44,8 @@ class UEADataModule(LightningDataModule):
             train_prop=0.9,
             split="train",
             seed=self.seed,
+            time=self.append_time_as_first_dim,
+            overwrite_cache=self.overwrite_cache,
             path="/tmp/datasets/",
         )
 
@@ -50,6 +58,7 @@ class UEADataModule(LightningDataModule):
             val_prop=self.train_val_ratio[1],
             seed=self.seed,
             time=self.append_time_as_first_dim,
+            overwrite_cache=False,
             path="/tmp/datasets/",
             # one_hot_y=False,
         )
@@ -79,7 +88,17 @@ class UEADataModule(LightningDataModule):
             xs.append(b[0])
             ys.append(b[1].max(dim=0, keepdim=True).indices)
             lengths.append(b[2])
-        return torch.stack(xs), torch.stack(ys).squeeze(-1), torch.stack(lengths)
+
+        stacked_xs = torch.stack(xs)
+        if not self.batch_as_first_dim:
+            # permute the default Batch, Seq ,Dim to Seq, Batch, Dim
+            stacked_xs = stacked_xs.permute(1, 0, 2)
+
+        stacked_ys = torch.stack(ys).squeeze(-1)
+        if self.return_lengths_as_last_dim:
+            return stacked_xs, stacked_ys, torch.stack(lengths)
+        else:
+            return stacked_xs, stacked_ys
 
     def train_dataloader(self) -> DataLoader:
         return DataLoader(
