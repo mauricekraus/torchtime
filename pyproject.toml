@@ -15,7 +15,7 @@ numpy = "^1.21.0"
 requests = "^2.27.1"
 scikit-learn = "^1.1.1"
 sktime = "^0.14"
-torch = "^1.11.0"
+torch = "^1.13.1"
 tqdm = "^4.64.0"
 lightning = { version = "^1.9.4", optional = true }
 fastapi = { version = "^0.88.0", optional = true }
